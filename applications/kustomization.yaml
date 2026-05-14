@@ -1,0 +1,5 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - openshift-external-secrets-operator.yaml   # sync-wave-0
+  - openshift-gitops-operator.yaml             # sync-wave-1

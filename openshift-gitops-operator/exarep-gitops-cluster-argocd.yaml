@@ -7,6 +7,7 @@ metadata:
     argocd.argoproj.io/sync-wave: "3"
 spec:
   server:
+    host: exarep-gitops-cluster.apps.hub.ocp.exarep.com
     route:
       enabled: true
   rbac:

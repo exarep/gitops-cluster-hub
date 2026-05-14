@@ -7,6 +7,7 @@
   vars:
     eso_namespace: openshift-external-secrets-operator
     eso_manifests_dir: "{{ playbook_dir }}/openshift-external-secrets-operator"
+    gitops_manifests_dir: "{{ playbook_dir }}/openshift-gitops-operator"
 
   tasks:
     - name: Verify logged in to OpenShift
@@ -208,9 +209,108 @@
           --ignore-not-found
       changed_when: true
 
-    - name: Display completion message
+    - name: Display ESO completion message
       ansible.builtin.debug:
         msg:
           - "External Secrets Operator installed and ready"
           - "Secret 'aws-secrets-manager-credentials' created in '{{ eso_namespace }}'"
           - "ClusterSecretStore 'aws-secrets-manager' validated with test secret"
+
+    # --- OpenShift GitOps Operator ---
+
+    - name: Apply GitOps namespaces
+      ansible.builtin.command:
+        cmd: oc apply -f {{ gitops_manifests_dir }}/namespaces.yaml
+      register: apply_gitops_ns
+      changed_when: "'created' in apply_gitops_ns.stdout or 'configured' in apply_gitops_ns.stdout"
+
+    - name: Apply GitOps operator group
+      ansible.builtin.command:
+        cmd: oc apply -f {{ gitops_manifests_dir }}/operator-group.yaml
+      register: apply_gitops_og
+      changed_when: "'created' in apply_gitops_og.stdout or 'configured' in apply_gitops_og.stdout"
+
+    - name: Apply GitOps subscription
+      ansible.builtin.command:
+        cmd: oc apply -f {{ gitops_manifests_dir }}/subscription.yaml
+      register: apply_gitops_sub
+      changed_when: "'created' in apply_gitops_sub.stdout or 'configured' in apply_gitops_sub.stdout"
+
+    - name: Wait for GitOps subscription to have a CSV
+      ansible.builtin.command:
+        cmd: >
+          oc get subscription openshift-gitops-operator
+          -n openshift-gitops-operator
+          -o jsonpath='{.status.installedCSV}'
+      register: gitops_installed_csv
+      until: gitops_installed_csv.stdout | length > 0
+      retries: 30
+      delay: 10
+      changed_when: false
+
+    - name: Wait for GitOps CSV to succeed
+      ansible.builtin.command:
+        cmd: >
+          oc get csv {{ gitops_installed_csv.stdout }}
+          -n openshift-gitops-operator
+          -o jsonpath='{.status.phase}'
+      register: gitops_csv_phase
+      until: gitops_csv_phase.stdout == 'Succeeded'
+      retries: 30
+      delay: 10
+      changed_when: false
+
+    - name: Apply ArgoCD instance
+      ansible.builtin.command:
+        cmd: oc apply -f {{ gitops_manifests_dir }}/exarep-gitops-cluster-argocd.yaml
+      register: apply_argocd
+      changed_when: "'created' in apply_argocd.stdout or 'configured' in apply_argocd.stdout"
+
+    - name: Wait for ArgoCD server to be ready
+      ansible.builtin.command:
+        cmd: >
+          oc rollout status deployment/exarep-gitops-cluster-argocd-server
+          -n exarep-gitops-cluster --timeout=10s
+      register: argocd_server_ready
+      until: argocd_server_ready.rc == 0
+      retries: 30
+      delay: 10
+      changed_when: false
+
+    - name: Apply AppProject
+      ansible.builtin.command:
+        cmd: oc apply -f {{ gitops_manifests_dir }}/cluster-app-project.yaml
+      register: apply_app_project
+      changed_when: "'created' in apply_app_project.stdout or 'configured' in apply_app_project.stdout"
+
+    - name: Apply GitHub repo ExternalSecret
+      ansible.builtin.command:
+        cmd: oc apply -f {{ gitops_manifests_dir }}/external-secret.yaml
+      register: apply_repo_es
+      changed_when: "'created' in apply_repo_es.stdout or 'configured' in apply_repo_es.stdout"
+
+    - name: Wait for GitHub repo secret to be created
+      ansible.builtin.command:
+        cmd: >
+          oc get secret gitops-cluster-hub-repo
+          -n exarep-gitops-cluster
+          -o jsonpath='{.data.password}'
+      register: repo_secret
+      until: repo_secret.stdout | length > 0
+      retries: 24
+      delay: 5
+      changed_when: false
+
+    - name: Apply app-of-apps
+      ansible.builtin.command:
+        cmd: oc apply -f {{ playbook_dir }}/app-of-apps.yaml
+      register: apply_app_of_apps
+      changed_when: "'created' in apply_app_of_apps.stdout or 'configured' in apply_app_of_apps.stdout"
+
+    - name: Display completion message
+      ansible.builtin.debug:
+        msg:
+          - "OpenShift GitOps Operator installed and ready"
+          - "ArgoCD instance 'exarep-gitops-cluster-argocd' is running in 'exarep-gitops-cluster'"
+          - "GitHub repo secret synced via ExternalSecret"
+          - "App-of-apps applied — ArgoCD is now managing the cluster"
