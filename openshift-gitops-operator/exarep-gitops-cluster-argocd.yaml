@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ArgoCD
+metadata:
+  name: exarep-gitops-cluster-argocd
+  namespace: exarep-gitops-cluster
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+spec:
+  server:
+    route:
+      enabled: true
+  rbac:
+    defaultPolicy: 'role:readonly'
+    policy: |
+      g, system:cluster-admins, role:admin
+      g, cluster-admins, role:admin
+    scopes: '[groups]'
+  sso:
+    dex:
+      openShiftOAuth: true
+    provider: dex
+  resourceTrackingMethod: annotation

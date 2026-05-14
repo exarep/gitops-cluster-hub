@@ -1,0 +1,9 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - namespaces.yaml                   # sync-wave-0
+  - operator-group.yaml               # sync-wave-1
+  - subscription.yaml                 # sync-wave-2
+  - exarep-gitops-cluster-argocd.yaml # sync-wave-3
+  - cluster-app-project.yaml          # sync-wave-4
+  - external-secret.yaml              # sync-wave-5
