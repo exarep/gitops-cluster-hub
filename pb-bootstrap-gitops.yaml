@@ -277,6 +277,12 @@
       delay: 10
       changed_when: false
 
+    - name: Apply cluster-admin ClusterRoleBinding for ArgoCD
+      ansible.builtin.command:
+        cmd: oc apply -f {{ gitops_manifests_dir }}/cluster-admin-binding.yaml
+      register: apply_crb
+      changed_when: "'created' in apply_crb.stdout or 'configured' in apply_crb.stdout"
+
     - name: Apply AppProject
       ansible.builtin.command:
         cmd: oc apply -f {{ gitops_manifests_dir }}/cluster-app-project.yaml
