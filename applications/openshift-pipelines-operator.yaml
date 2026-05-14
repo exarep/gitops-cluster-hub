@@ -1,0 +1,19 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: openshift-pipelines-operator
+  namespace: exarep-gitops-cluster
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  project: cluster
+  source:
+    repoURL: https://github.com/exarep/gitops-cluster-hub.git
+    targetRevision: main
+    path: openshift-pipelines-operator
+  destination:
+    server: https://kubernetes.default.svc
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

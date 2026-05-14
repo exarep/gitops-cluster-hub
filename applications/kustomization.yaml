@@ -3,3 +3,5 @@ kind: Kustomization
 resources:
   - openshift-external-secrets-operator.yaml   # sync-wave-0
   - openshift-gitops-operator.yaml             # sync-wave-1
+  - openshift-cert-manager-operator.yaml       # sync-wave-2
+  - openshift-pipelines-operator.yaml          # sync-wave-2
