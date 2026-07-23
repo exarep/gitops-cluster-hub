@@ -1,1 +1,90 @@
 # gitops-cluster-hub
+
+GitOps repository for managing the exarep hub cluster. Uses OpenShift GitOps (ArgoCD) with Kustomize overlays and sync waves.
+
+## Prerequisites
+
+- Access to an OpenShift cluster with `cluster-admin` privileges
+- `oc` CLI authenticated to the target cluster
+- Python 3.11+
+
+## Setup
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+pip install --upgrade pip
+ansible-galaxy collection install -r galaxy.yaml
+```
+
+## Bootstrap
+
+```bash
+source .venv/bin/activate
+ansible-playbook pb-bootstrap.yaml
+```
+
+## Repository Structure
+
+```
+gitops-cluster-hub/
+├── resources/
+│   ├── openshift-gitops-operator/
+│   │   ├── kustomization.yaml
+│   │   ├── namespace.yaml
+│   │   ├── operator-group.yaml
+│   │   └── subscription.yaml
+│   └── gitops-cluster/
+│       ├── kustomization.yaml
+│       ├── namespace.yaml
+│       └── argocd.yaml
+├── pb-bootstrap.yaml
+├── requirements.txt
+└── README.md
+```
+
+## Details
+
+### Bootstrap Playbook
+
+The bootstrap playbook installs the OpenShift GitOps operator with the default ArgoCD instance disabled, then creates a custom ArgoCD instance and grants it cluster-admin privileges.
+
+| Step | Description                                                          |
+| ---- | -------------------------------------------------------------------- |
+| 1    | Creates the`openshift-gitops-operator` namespace                   |
+| 2    | Creates the OperatorGroup for the GitOps operator                    |
+| 3    | Creates the Subscription with default ArgoCD instance disabled       |
+| 4    | Waits for the ClusterServiceVersion to reach`Succeeded` phase      |
+| 5    | Creates the`gitops-cluster` namespace                              |
+| 6    | Creates the custom ArgoCD instance                                   |
+| 7    | Waits for the ArgoCD instance to become `Available`                  |
+| 8    | Enables the GitOps console plugin on the OpenShift web console       |
+| 9    | Grants the ArgoCD application controller `cluster-admin` privileges  |
+
+The retry timeouts default to 10 minutes (60 retries x 10 seconds). Override them with extra vars if needed:
+
+```bash
+ansible-playbook pb-bootstrap.yaml \
+  -e csv_retry_count=90 \
+  -e csv_retry_delay=15
+```
+
+### Resource Manifests
+
+The `resources/` directory contains the Kubernetes manifests applied during bootstrap. These same manifests are reused by ArgoCD for self-management via the app-of-apps pattern.
+
+**openshift-gitops-operator** — Operator installation via OLM:
+
+| Sync Wave | Resource      |
+| --------- | ------------- |
+| 0         | Namespace     |
+| 1         | OperatorGroup |
+| 2         | Subscription  |
+
+**gitops-cluster** — Custom ArgoCD instance:
+
+| Sync Wave | Resource  |
+| --------- | --------- |
+| 0         | Namespace |
+| 1         | ArgoCD    |

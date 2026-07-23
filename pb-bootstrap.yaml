@@ -1,0 +1,118 @@
+---
+- name: Bootstrap OpenShift GitOps Operator and ArgoCD
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  collections:
+    - kubernetes.core
+
+  vars:
+    operator_namespace: openshift-gitops-operator
+    argocd_namespace: gitops-cluster
+    csv_retry_count: 60
+    csv_retry_delay: 10
+    argocd_retry_count: 60
+    argocd_retry_delay: 10
+
+  tasks:
+    - name: Create operator namespace
+      kubernetes.core.k8s:
+        state: present
+        src: "{{ playbook_dir }}/resources/openshift-gitops-operator/namespace.yaml"
+
+    - name: Create operator group
+      kubernetes.core.k8s:
+        state: present
+        src: "{{ playbook_dir }}/resources/openshift-gitops-operator/operator-group.yaml"
+
+    - name: Create operator subscription
+      kubernetes.core.k8s:
+        state: present
+        src: "{{ playbook_dir }}/resources/openshift-gitops-operator/subscription.yaml"
+
+    - name: Wait for ClusterServiceVersion to succeed
+      kubernetes.core.k8s_info:
+        api_version: operators.coreos.com/v1alpha1
+        kind: ClusterServiceVersion
+        namespace: "{{ operator_namespace }}"
+        label_selectors:
+          - "operators.coreos.com/openshift-gitops-operator.openshift-gitops-operator="
+      register: csv_result
+      until:
+        - csv_result.resources | length > 0
+        - csv_result.resources[0].status.phase | default('') == 'Succeeded'
+      retries: "{{ csv_retry_count }}"
+      delay: "{{ csv_retry_delay }}"
+
+    - name: Display installed CSV
+      ansible.builtin.debug:
+        msg: "Installed {{ csv_result.resources[0].metadata.name }} — phase: {{ csv_result.resources[0].status.phase }}"
+
+    - name: Create ArgoCD namespace
+      kubernetes.core.k8s:
+        state: present
+        src: "{{ playbook_dir }}/resources/gitops-cluster/namespace.yaml"
+
+    - name: Create ArgoCD instance
+      kubernetes.core.k8s:
+        state: present
+        src: "{{ playbook_dir }}/resources/gitops-cluster/argocd.yaml"
+
+    - name: Wait for ArgoCD instance to be available
+      kubernetes.core.k8s_info:
+        api_version: argoproj.io/v1beta1
+        kind: ArgoCD
+        namespace: "{{ argocd_namespace }}"
+        name: gitops-cluster
+      register: argocd_result
+      until:
+        - argocd_result.resources | length > 0
+        - argocd_result.resources[0].status.phase | default('') == 'Available'
+      retries: "{{ argocd_retry_count }}"
+      delay: "{{ argocd_retry_delay }}"
+
+    - name: Display ArgoCD instance status
+      ansible.builtin.debug:
+        msg: "ArgoCD instance '{{ argocd_result.resources[0].metadata.name }}' is {{ argocd_result.resources[0].status.phase }}"
+
+    - name: Get current console operator plugins
+      kubernetes.core.k8s_info:
+        api_version: operator.openshift.io/v1
+        kind: Console
+        name: cluster
+      register: console_result
+
+    - name: Enable GitOps console plugin
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: operator.openshift.io/v1
+          kind: Console
+          metadata:
+            name: cluster
+          spec:
+            plugins: "{{ (console_result.resources[0].spec.plugins | default([])) | union(['gitops-plugin']) }}"
+
+    - name: Grant ArgoCD cluster-admin privileges
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: rbac.authorization.k8s.io/v1
+          kind: ClusterRoleBinding
+          metadata:
+            name: gitops-cluster-argocd-application-controller-cluster-admin
+          roleRef:
+            apiGroup: rbac.authorization.k8s.io
+            kind: ClusterRole
+            name: cluster-admin
+          subjects:
+            - kind: ServiceAccount
+              name: gitops-cluster-argocd-application-controller
+              namespace: "{{ argocd_namespace }}"
+
+    - name: Bootstrap complete
+      ansible.builtin.debug:
+        msg: >-
+          OpenShift GitOps operator and ArgoCD are ready.
+          Apply the app-of-apps to begin cluster management.
