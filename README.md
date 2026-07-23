@@ -48,12 +48,16 @@ gitops-cluster-hub/
 │   ├── console-notification/
 │   │   ├── kustomization.yaml
 │   │   └── console-notification.yaml
-│   └── open-cluster-management/
+│   ├── open-cluster-management/
+│   │   ├── kustomization.yaml
+│   │   ├── namespace.yaml
+│   │   ├── operator-group.yaml
+│   │   ├── subscription.yaml
+│   │   └── multiclusterhub.yaml
+│   └── openshift-pipelines/
 │       ├── kustomization.yaml
 │       ├── namespace.yaml
-│       ├── operator-group.yaml
-│       ├── subscription.yaml
-│       └── multiclusterhub.yaml
+│       └── subscription.yaml
 ├── applications/
 │   ├── kustomization.yaml
 │   ├── openshift-gitops-operator.yaml
@@ -61,6 +65,7 @@ gitops-cluster-hub/
 │   ├── openshift-nmstate.yaml
 │   ├── console-notification.yaml
 │   ├── open-cluster-management.yaml
+│   ├── openshift-pipelines.yaml
 │   └── app-of-apps.yaml         # Root Application
 ├── pb-bootstrap.yaml
 ├── requirements.txt
@@ -105,6 +110,7 @@ The `applications/app-of-apps.yaml` is the root ArgoCD Application that points t
 | 2         | openshift-nmstate         | resources/openshift-nmstate         |
 | 3         | console-notification      | resources/console-notification      |
 | 4         | open-cluster-management   | resources/open-cluster-management   |
+| 5         | openshift-pipelines       | resources/openshift-pipelines       |
 
 ### Resource Manifests
 
@@ -148,3 +154,10 @@ The `resources/` directory contains the Kubernetes manifests managed by ArgoCD t
 | 1         | OperatorGroup    |
 | 2         | Subscription     |
 | 3         | MultiClusterHub  |
+
+**openshift-pipelines** — OpenShift Pipelines (Tekton):
+
+| Sync Wave | Resource     |
+| --------- | ------------ |
+| 0         | Namespace    |
+| 1         | Subscription |

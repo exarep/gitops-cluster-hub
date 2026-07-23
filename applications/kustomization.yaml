@@ -6,3 +6,4 @@ resources:
   - openshift-nmstate.yaml           # sync-wave-2
   - console-notification.yaml        # sync-wave-3
   - open-cluster-management.yaml     # sync-wave-4
+  - openshift-pipelines.yaml         # sync-wave-5
