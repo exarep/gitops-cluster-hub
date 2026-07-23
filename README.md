@@ -45,15 +45,22 @@ gitops-cluster-hub/
 │   │   ├── nmstate.yaml
 │   │   ├── operator-group.yaml
 │   │   └── subscription.yaml
-│   └── console-notification/
+│   ├── console-notification/
+│   │   ├── kustomization.yaml
+│   │   └── console-notification.yaml
+│   └── open-cluster-management/
 │       ├── kustomization.yaml
-│       └── console-notification.yaml
+│       ├── namespace.yaml
+│       ├── operator-group.yaml
+│       ├── subscription.yaml
+│       └── multiclusterhub.yaml
 ├── applications/
 │   ├── kustomization.yaml
 │   ├── openshift-gitops-operator.yaml
 │   ├── gitops-cluster.yaml
 │   ├── openshift-nmstate.yaml
 │   ├── console-notification.yaml
+│   ├── open-cluster-management.yaml
 │   └── app-of-apps.yaml         # Root Application
 ├── pb-bootstrap.yaml
 ├── requirements.txt
@@ -97,6 +104,7 @@ The `applications/app-of-apps.yaml` is the root ArgoCD Application that points t
 | 1         | gitops-cluster            | resources/gitops-cluster            |
 | 2         | openshift-nmstate         | resources/openshift-nmstate         |
 | 3         | console-notification      | resources/console-notification      |
+| 4         | open-cluster-management   | resources/open-cluster-management   |
 
 ### Resource Manifests
 
@@ -131,3 +139,12 @@ The `resources/` directory contains the Kubernetes manifests managed by ArgoCD t
 | Sync Wave | Resource             |
 | --------- | -------------------- |
 | 0         | ConsoleNotification  |
+
+**open-cluster-management** — Red Hat Advanced Cluster Management:
+
+| Sync Wave | Resource         |
+| --------- | ---------------- |
+| 0         | Namespace        |
+| 1         | OperatorGroup    |
+| 2         | Subscription     |
+| 3         | MultiClusterHub  |

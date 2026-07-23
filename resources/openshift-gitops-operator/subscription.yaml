@@ -6,7 +6,7 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "2"
 spec:
-  channel: latest
+  channel: gitops-1.21
   installPlanApproval: Automatic
   name: openshift-gitops-operator
   source: redhat-operators
