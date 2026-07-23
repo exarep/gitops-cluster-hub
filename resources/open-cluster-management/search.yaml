@@ -1,0 +1,13 @@
+apiVersion: search.open-cluster-management.io/v1alpha1
+kind: Search
+metadata:
+  name: search-v2-operator
+  namespace: open-cluster-management
+  labels:
+    cluster.open-cluster-management.io/backup: ""
+  annotations:
+    argocd.argoproj.io/sync-wave: "4"
+spec:
+  dbStorage:
+    size: 10Gi
+    storageClassName: gp3-csi

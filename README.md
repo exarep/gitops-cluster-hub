@@ -53,7 +53,8 @@ gitops-cluster-hub/
 │   │   ├── namespace.yaml
 │   │   ├── operator-group.yaml
 │   │   ├── subscription.yaml
-│   │   └── multiclusterhub.yaml
+│   │   ├── multiclusterhub.yaml
+│   │   └── search.yaml
 │   ├── openshift-pipelines/
 │   │   ├── kustomization.yaml
 │   │   ├── namespace.yaml
@@ -159,6 +160,7 @@ The `resources/` directory contains the Kubernetes manifests managed by ArgoCD t
 | 1         | OperatorGroup    |
 | 2         | Subscription     |
 | 3         | MultiClusterHub  |
+| 4         | Search CR        |
 
 **openshift-pipelines** — OpenShift Pipelines (Tekton):
 

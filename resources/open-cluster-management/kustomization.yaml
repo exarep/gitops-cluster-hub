@@ -5,3 +5,4 @@ resources:
   - operator-group.yaml       # sync-wave-1
   - subscription.yaml         # sync-wave-2
   - multiclusterhub.yaml      # sync-wave-3
+  - search.yaml               # sync-wave-4
