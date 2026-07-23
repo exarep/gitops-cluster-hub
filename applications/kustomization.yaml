@@ -7,3 +7,4 @@ resources:
   - console-notification.yaml        # sync-wave-3
   - open-cluster-management.yaml     # sync-wave-4
   - openshift-pipelines.yaml         # sync-wave-5
+  - console-plugins.yaml             # sync-wave-6

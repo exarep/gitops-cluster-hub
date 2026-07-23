@@ -54,10 +54,13 @@ gitops-cluster-hub/
 │   │   ├── operator-group.yaml
 │   │   ├── subscription.yaml
 │   │   └── multiclusterhub.yaml
-│   └── openshift-pipelines/
+│   ├── openshift-pipelines/
+│   │   ├── kustomization.yaml
+│   │   ├── namespace.yaml
+│   │   └── subscription.yaml
+│   └── console-plugins/
 │       ├── kustomization.yaml
-│       ├── namespace.yaml
-│       └── subscription.yaml
+│       └── console.yaml
 ├── applications/
 │   ├── kustomization.yaml
 │   ├── openshift-gitops-operator.yaml
@@ -66,6 +69,7 @@ gitops-cluster-hub/
 │   ├── console-notification.yaml
 │   ├── open-cluster-management.yaml
 │   ├── openshift-pipelines.yaml
+│   ├── console-plugins.yaml
 │   └── app-of-apps.yaml         # Root Application
 ├── pb-bootstrap.yaml
 ├── requirements.txt
@@ -111,6 +115,7 @@ The `applications/app-of-apps.yaml` is the root ArgoCD Application that points t
 | 3         | console-notification      | resources/console-notification      |
 | 4         | open-cluster-management   | resources/open-cluster-management   |
 | 5         | openshift-pipelines       | resources/openshift-pipelines       |
+| 6         | console-plugins           | resources/console-plugins           |
 
 ### Resource Manifests
 
@@ -161,3 +166,9 @@ The `resources/` directory contains the Kubernetes manifests managed by ArgoCD t
 | --------- | ------------ |
 | 0         | Namespace    |
 | 1         | Subscription |
+
+**console-plugins** — Console operator plugin configuration:
+
+| Sync Wave | Resource |
+| --------- | -------- |
+| 0         | Console  |
