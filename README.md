@@ -39,17 +39,21 @@ gitops-cluster-hub/
 │   │   ├── kustomization.yaml
 │   │   ├── namespace.yaml
 │   │   └── argocd.yaml
-│   └── openshift-nmstate/
+│   ├── openshift-nmstate/
+│   │   ├── kustomization.yaml
+│   │   ├── namespace.yaml
+│   │   ├── nmstate.yaml
+│   │   ├── operator-group.yaml
+│   │   └── subscription.yaml
+│   └── console-notification/
 │       ├── kustomization.yaml
-│       ├── namespace.yaml
-│       ├── nmstate.yaml
-│       ├── operator-group.yaml
-│       └── subscription.yaml
+│       └── console-notification.yaml
 ├── applications/
 │   ├── kustomization.yaml
 │   ├── openshift-gitops-operator.yaml
 │   ├── gitops-cluster.yaml
 │   ├── openshift-nmstate.yaml
+│   ├── console-notification.yaml
 │   └── app-of-apps.yaml         # Root Application
 ├── pb-bootstrap.yaml
 ├── requirements.txt
@@ -92,6 +96,7 @@ The `applications/app-of-apps.yaml` is the root ArgoCD Application that points t
 | 0         | openshift-gitops-operator | resources/openshift-gitops-operator |
 | 1         | gitops-cluster            | resources/gitops-cluster            |
 | 2         | openshift-nmstate         | resources/openshift-nmstate         |
+| 3         | console-notification      | resources/console-notification      |
 
 ### Resource Manifests
 
@@ -120,3 +125,9 @@ The `resources/` directory contains the Kubernetes manifests managed by ArgoCD t
 | 1         | OperatorGroup |
 | 2         | Subscription  |
 | 3         | NMState CR    |
+
+**console-notification** — Cluster banner:
+
+| Sync Wave | Resource             |
+| --------- | -------------------- |
+| 0         | ConsoleNotification  |

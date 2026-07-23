@@ -1,0 +1,11 @@
+apiVersion: console.openshift.io/v1
+kind: ConsoleNotification
+metadata:
+  name: cluster-banner
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  text: "Exarep Hub Cluster"
+  location: BannerTop
+  backgroundColor: "#0066CC"
+  color: "#FFFFFF"

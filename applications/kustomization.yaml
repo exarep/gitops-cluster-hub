@@ -4,3 +4,4 @@ resources:
   - openshift-gitops-operator.yaml   # sync-wave-0
   - gitops-cluster.yaml              # sync-wave-1
   - openshift-nmstate.yaml           # sync-wave-2
+  - console-notification.yaml       # sync-wave-3
