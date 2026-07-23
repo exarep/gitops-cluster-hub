@@ -20,6 +20,10 @@ spec:
         termination: reencrypt
   ha:
     enabled: false
+  sso:
+    provider: dex
+    dex:
+      openShiftOAuth: true
   rbac:
     defaultPolicy: ""
     policy: |

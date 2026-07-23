@@ -35,10 +35,22 @@ gitops-cluster-hub/
 │   │   ├── namespace.yaml
 │   │   ├── operator-group.yaml
 │   │   └── subscription.yaml
-│   └── gitops-cluster/
+│   ├── gitops-cluster/
+│   │   ├── kustomization.yaml
+│   │   ├── namespace.yaml
+│   │   └── argocd.yaml
+│   └── openshift-nmstate/
 │       ├── kustomization.yaml
 │       ├── namespace.yaml
-│       └── argocd.yaml
+│       ├── nmstate.yaml
+│       ├── operator-group.yaml
+│       └── subscription.yaml
+├── applications/
+│   ├── kustomization.yaml
+│   ├── openshift-gitops-operator.yaml
+│   ├── gitops-cluster.yaml
+│   ├── openshift-nmstate.yaml
+│   └── app-of-apps.yaml         # Root Application
 ├── pb-bootstrap.yaml
 ├── requirements.txt
 └── README.md
@@ -58,9 +70,10 @@ The bootstrap playbook installs the OpenShift GitOps operator with the default A
 | 4    | Waits for the ClusterServiceVersion to reach`Succeeded` phase      |
 | 5    | Creates the`gitops-cluster` namespace                              |
 | 6    | Creates the custom ArgoCD instance                                   |
-| 7    | Waits for the ArgoCD instance to become `Available`                  |
+| 7    | Waits for the ArgoCD instance to become`Available`                 |
 | 8    | Enables the GitOps console plugin on the OpenShift web console       |
-| 9    | Grants the ArgoCD application controller `cluster-admin` privileges  |
+| 9    | Grants the ArgoCD application controller`cluster-admin` privileges |
+| 10   | Applies the app-of-apps to hand control to ArgoCD                    |
 
 The retry timeouts default to 10 minutes (60 retries x 10 seconds). Override them with extra vars if needed:
 
@@ -70,9 +83,19 @@ ansible-playbook pb-bootstrap.yaml \
   -e csv_retry_delay=15
 ```
 
+### App-of-Apps
+
+The `applications/app-of-apps.yaml` is the root ArgoCD Application that points to the `applications/` directory. Each Application in that directory manages a corresponding `resources/` path with automated sync, self-heal, and pruning enabled.
+
+| Sync Wave | Application               | Resource Path                       |
+| --------- | ------------------------- | ----------------------------------- |
+| 0         | openshift-gitops-operator | resources/openshift-gitops-operator |
+| 1         | gitops-cluster            | resources/gitops-cluster            |
+| 2         | openshift-nmstate         | resources/openshift-nmstate         |
+
 ### Resource Manifests
 
-The `resources/` directory contains the Kubernetes manifests applied during bootstrap. These same manifests are reused by ArgoCD for self-management via the app-of-apps pattern.
+The `resources/` directory contains the Kubernetes manifests managed by ArgoCD through the app-of-apps pattern.
 
 **openshift-gitops-operator** — Operator installation via OLM:
 
@@ -88,3 +111,12 @@ The `resources/` directory contains the Kubernetes manifests applied during boot
 | --------- | --------- |
 | 0         | Namespace |
 | 1         | ArgoCD    |
+
+**openshift-nmstate** — Kubernetes NMState Operator:
+
+| Sync Wave | Resource      |
+| --------- | ------------- |
+| 0         | Namespace     |
+| 1         | OperatorGroup |
+| 2         | Subscription  |
+| 3         | NMState CR    |

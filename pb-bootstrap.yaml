@@ -111,8 +111,13 @@
               name: gitops-cluster-argocd-application-controller
               namespace: "{{ argocd_namespace }}"
 
+    - name: Apply app-of-apps
+      kubernetes.core.k8s:
+        state: present
+        src: "{{ playbook_dir }}/applications/app-of-apps.yaml"
+
     - name: Bootstrap complete
       ansible.builtin.debug:
         msg: >-
           OpenShift GitOps operator and ArgoCD are ready.
-          Apply the app-of-apps to begin cluster management.
+          The app-of-apps has been applied — ArgoCD is now managing the cluster.
