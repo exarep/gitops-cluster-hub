@@ -8,3 +8,4 @@ resources:
   - open-cluster-management.yaml     # sync-wave-4
   - openshift-pipelines.yaml         # sync-wave-5
   - console-plugins.yaml             # sync-wave-6
+  - external-secrets.yaml            # sync-wave-7

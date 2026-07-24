@@ -18,6 +18,19 @@ pip install --upgrade pip
 ansible-galaxy collection install -r galaxy.yaml
 ```
 
+## Pre-Bootstrap: Create AWS Credentials Secret
+
+The External Secrets Operator requires AWS credentials to access Secrets Manager. Create the secret in the `openshift-config` namespace before bootstrapping:
+
+```bash
+oc create namespace openshift-config 2>/dev/null || true
+
+oc create secret generic aws-credentials \
+  -n openshift-config \
+  --from-literal=access-key-id="$(aws configure get aws_access_key_id)" \
+  --from-literal=secret-access-key="$(aws configure get aws_secret_access_key)"
+```
+
 ## Bootstrap
 
 ```bash
@@ -59,9 +72,15 @@ gitops-cluster-hub/
 │   │   ├── kustomization.yaml
 │   │   ├── namespace.yaml
 │   │   └── subscription.yaml
-│   └── console-plugins/
+│   ├── console-plugins/
+│   │   ├── kustomization.yaml
+│   │   └── console.yaml
+│   └── external-secrets/
 │       ├── kustomization.yaml
-│       └── console.yaml
+│       ├── namespace.yaml
+│       ├── operator-group.yaml
+│       ├── subscription.yaml
+│       └── cluster-secret-store.yaml
 ├── applications/
 │   ├── kustomization.yaml
 │   ├── openshift-gitops-operator.yaml
@@ -71,6 +90,7 @@ gitops-cluster-hub/
 │   ├── open-cluster-management.yaml
 │   ├── openshift-pipelines.yaml
 │   ├── console-plugins.yaml
+│   ├── external-secrets.yaml
 │   └── app-of-apps.yaml         # Root Application
 ├── pb-bootstrap.yaml
 ├── requirements.txt
@@ -117,6 +137,7 @@ The `applications/app-of-apps.yaml` is the root ArgoCD Application that points t
 | 4         | open-cluster-management   | resources/open-cluster-management   |
 | 5         | openshift-pipelines       | resources/openshift-pipelines       |
 | 6         | console-plugins           | resources/console-plugins           |
+| 7         | external-secrets          | resources/external-secrets          |
 
 ### Resource Manifests
 
@@ -148,19 +169,19 @@ The `resources/` directory contains the Kubernetes manifests managed by ArgoCD t
 
 **console-notification** — Cluster banner:
 
-| Sync Wave | Resource             |
-| --------- | -------------------- |
-| 0         | ConsoleNotification  |
+| Sync Wave | Resource            |
+| --------- | ------------------- |
+| 0         | ConsoleNotification |
 
 **open-cluster-management** — Red Hat Advanced Cluster Management:
 
-| Sync Wave | Resource         |
-| --------- | ---------------- |
-| 0         | Namespace        |
-| 1         | OperatorGroup    |
-| 2         | Subscription     |
-| 3         | MultiClusterHub  |
-| 4         | Search CR        |
+| Sync Wave | Resource        |
+| --------- | --------------- |
+| 0         | Namespace       |
+| 1         | OperatorGroup   |
+| 2         | Subscription    |
+| 3         | MultiClusterHub |
+| 4         | Search CR       |
 
 **openshift-pipelines** — OpenShift Pipelines (Tekton):
 
@@ -174,3 +195,12 @@ The `resources/` directory contains the Kubernetes manifests managed by ArgoCD t
 | Sync Wave | Resource |
 | --------- | -------- |
 | 0         | Console  |
+
+**external-secrets** — External Secrets Operator with AWS Secrets Manager:
+
+| Sync Wave | Resource           |
+| --------- | ------------------ |
+| 0         | Namespace          |
+| 1         | OperatorGroup      |
+| 2         | Subscription       |
+| 3         | ClusterSecretStore |
