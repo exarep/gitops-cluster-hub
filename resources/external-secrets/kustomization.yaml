@@ -4,4 +4,5 @@ resources:
   - namespace.yaml        # sync-wave-0
   - operator-group.yaml   # sync-wave-1
   - subscription.yaml           # sync-wave-2
-  - cluster-secret-store.yaml   # sync-wave-3
+  - operator-config.yaml        # sync-wave-3
+  - cluster-secret-store.yaml   # sync-wave-4
