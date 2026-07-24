@@ -30,6 +30,30 @@ spec:
       g, system:cluster-admins, role:admin
     scopes: '[groups]'
   repo: {}
+  resourceHealthChecks:
+    - group: external-secrets.io
+      kind: ClusterSecretStore
+      check: |
+        hs = {}
+        if obj.status ~= nil then
+          if obj.status.conditions ~= nil then
+            for i, condition in ipairs(obj.status.conditions) do
+              if condition.type == "Ready" then
+                if condition.status == "True" then
+                  hs.status = "Healthy"
+                  hs.message = condition.message or "Store is ready"
+                else
+                  hs.status = "Degraded"
+                  hs.message = condition.message or "Store is not ready"
+                end
+                return hs
+              end
+            end
+          end
+        end
+        hs.status = "Progressing"
+        hs.message = "Waiting for store to be ready"
+        return hs
   resourceExclusions: |
     - apiGroups:
         - tekton.dev

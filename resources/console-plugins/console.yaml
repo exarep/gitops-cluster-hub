@@ -11,5 +11,6 @@ spec:
     - pipelines-console-plugin
     - networking-console-plugin
     - nmstate-console-plugin
+    - monitoring-plugin
     - mce
     - acm
