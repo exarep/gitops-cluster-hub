@@ -9,3 +9,7 @@ spec:
   plugins:
     - gitops-plugin
     - pipelines-console-plugin
+    - networking-console-plugin
+    - nmstate-console-plugin
+    - mce
+    - acm
